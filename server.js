@@ -5,12 +5,13 @@ const app = express()
 const multer  = require('multer')
 const upload = multer()
 
-const transcribe = require('./transcribe')
+const transcribe = require('./services/transcribeService')
 
 app.use(express.static(path.join(__dirname, 'build')))
 
 app.post('/api/transcribe', upload.single('file'), async function (req, res) {
-	const results = await transcribe.syncRecognize((req.file.buffer.toString('base64')))
+	const file = req.file
+	const results = await transcribe.asyncRecognize(file.buffer.toString('base64'))
 	res.send(results)
 })
 

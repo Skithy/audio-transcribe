@@ -11,8 +11,14 @@ class App extends Component {
 
   handleFileAdd = e => {
     if (e.target.files.length > 0) {
-      this.setState({file: e.target.files[0]})
+      if (this.validateFile(e.target.files[0])) {
+        this.setState({file: e.target.files[0]})
+        return
+      } else {
+        alert("Invalid file type!")
+      }
     }
+    this.setState({file: null})
   }
 
   handleUpload = async(e) => {
@@ -26,7 +32,12 @@ class App extends Component {
           transcription: "Transcribing..."
         })
         const results = await this.sendFile(file)
-        this.setState({transcription: results.transcript})
+        if (results) {
+          this.setState({transcription: results.transcript})
+        }
+        else {
+          alert("Failed to upload!")
+        }
       }
     }
     catch (err) {
@@ -34,16 +45,36 @@ class App extends Component {
     }
   }
 
-  sendFile = async(file) => {
-    var data = new FormData()
-    data.append('file', file)
+  getExt = name => {
+    const parts = name.split('.')
+    return parts[parts.length - 1]
+  }
 
-    const response = await fetch('/api/transcribe', {
-      method: 'POST',
-      body: data
-    })
-    const result = await response.json()
-    return result
+  validateFile = file => {
+    const fileTypes = [
+      "wav", "mp3", "wma",
+      "aac", "ogg", "raw",
+      "m4a", "mp4",
+      "alac", "aiff", "flac"
+    ]
+    return fileTypes.includes(this.getExt(file.name).toLowerCase())
+  }
+
+  sendFile = async(file) => {
+    try {
+      var data = new FormData()
+      data.append('file', file)
+
+      const response = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: data
+      })
+      return await response.json()
+    }
+    catch (err) {
+      console.log("Upload error: " + err)
+      return null
+    }
   }
 
   render() {
@@ -60,8 +91,7 @@ class App extends Component {
             Upload
           </button>
         </form>
-        <audio
-          controls
+        <audio controls
           src={this.state.audioSrc}>
           Browser does not support audio
         </audio>
@@ -69,8 +99,8 @@ class App extends Component {
           {this.state.transcription}
         </div>
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App

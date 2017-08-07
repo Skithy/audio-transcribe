@@ -5,9 +5,7 @@ function fileToArrayBuffer(file) {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader()
 	  reader.onload = () => resolve(reader.result)
-	  reader.onerror = () => {
-	  	throw new Error("Failed to read!")
-	  }
+	  reader.onerror = () => reject(reader.statusText)
 	  reader.readAsArrayBuffer(file)
 	})  
 }

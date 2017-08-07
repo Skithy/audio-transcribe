@@ -1,5 +1,5 @@
 {
-	"GCLOUD_PROJECT": "sanguine-anthem-175813",
+	"GCLOUD_PROJECT": "audio-transcribr",
 	"DATA_BACKEND": "datastore",
 	"CLOUD_BUCKET": "gs://audio-transcribr"
 }
