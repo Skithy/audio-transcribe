@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import { fileToMonoWav } from './services/audioTools'
+import './App.css'
 
 class App extends Component {
   state = {
     file: null,
-    audioSrc: ""
+    audioSrc: "",
+    transcription: null
   }
 
   handleFileAdd = e => {
@@ -14,26 +15,35 @@ class App extends Component {
     }
   }
 
-  handleUpload = e => {
+  handleUpload = async(e) => {
     e.preventDefault()
-    if (this.state.file) {
-      this.setState({audioSrc: URL.createObjectURL(this.state.file)})
-      var data = new FormData()
-      data.append('file', this.state.file)
-
-      fetch('/api/transcribe', {
-        method: 'POST',
-        body: data
-      }).then(e => console.log(e))
-      // const reader = new FileReader()
-      // reader.readAsArrayBuffer(this.state.file)
-      // reader.onload = e => {
-      //   const audioContext = new AudioContext()
-      //   audioContext.decodeAudioData(reader.result).then(decodedBuffer => {
-      //     console.log(decodedBuffer)
-      //   })
-      // }
+    try {
+      if (this.state.file) {
+        this.setState({transcription: "Converting..."})
+        const file = await fileToMonoWav(this.state.file)
+        this.setState({
+          audioSrc: URL.createObjectURL(file),
+          transcription: "Transcribing..."
+        })
+        const results = await this.sendFile(file)
+        this.setState({transcription: results.transcript})
+      }
     }
+    catch (err) {
+      console.log("Error: " + err)
+    }
+  }
+
+  sendFile = async(file) => {
+    var data = new FormData()
+    data.append('file', file)
+
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: data
+    })
+    const result = await response.json()
+    return result
   }
 
   render() {
@@ -55,6 +65,9 @@ class App extends Component {
           src={this.state.audioSrc}>
           Browser does not support audio
         </audio>
+        <div>
+          {this.state.transcription}
+        </div>
       </div>
     );
   }
