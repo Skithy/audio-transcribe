@@ -14,9 +14,7 @@ class App extends Component {
       if (this.validateFile(e.target.files[0])) {
         this.setState({file: e.target.files[0]})
         return
-      } else {
-        alert("Invalid file type!")
-      }
+      alert("Invalid file type!")
     }
     this.setState({file: null})
   }
